@@ -1,0 +1,339 @@
+<html lang="it">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.4/axios.min.js"></script>
+    <script src="https://npmcdn.com/vue-router@3.5.2/dist/vue-router.js"></script>
+
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap@4.6.0/dist/css/bootstrap.css"/>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.css"/>
+
+    <style rel="stylesheet">
+        .floatingButtons {
+            position: fixed;
+            bottom: 5%;
+            right: 1%;
+        }
+
+        .floatingButtons button{
+            height: 100px;
+            width: 100px;
+            border-radius: 50%;
+            font-size: 50px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35em 0.65em;
+            font-size: .75em;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+            background-color: lightblue;
+        }
+
+        header {
+            width: 100%;
+        }
+
+        .ml-auto, .mx-auto {
+            margin-left: auto !important;
+        }
+
+        .myNavbar {
+            padding-bottom: 10px;
+            width: 100%;
+        }
+
+        .navbar-nav .dropdown-menu {
+            position: static;
+            float: none;
+
+        }
+
+        .dropdown-menu-right {
+            right: 0;
+            left: auto;
+        }
+
+        .navbar-link {
+            text-decoration: none;
+            color: white;
+            font-size: medium;
+        }
+
+        .navbar-login {
+            text-decoration: none;
+            color: white;
+            font-size: large;
+            font-weight: bold;
+        }
+
+        .navbar-link:hover, .navbar-login:hover {
+            text-decoration: none;
+            color: gray;
+        }
+
+
+        #login {
+            margin: auto;
+            margin-top: 50px;
+            width: 50%;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: lightblue;
+        }
+
+        #login form {
+            text-align: center;
+
+
+        }
+
+
+        .myButton{
+            float: right;
+            width: fit-content;
+        }
+
+        .myButtonsGroup {
+            margin: auto;
+            width: fit-content;
+            padding: 10px;
+        }
+
+        .myTable {
+            text-align: center;
+            margin: auto;
+            width: 87%;
+        }
+
+        .myInputs {
+            text-align: center;
+            margin: auto;
+            width: 68%;
+        }
+
+        #bookButton {
+
+            margin: auto;
+            width: fit-content;
+            padding: 10px;
+        }
+
+        .form-group {
+
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<script type='module'>
+    import Main from './main.js';
+    import BookTutoring from './js/bookTutoring.js';
+    import Login from './js/login.js';
+    import MyBooks from './js/myBooks.js';
+    import AddThings from './js/addThings.js';
+    import DeleteThings from './js/deleteThings.js'
+
+
+    const router = new VueRouter({
+        routes: [
+            {name: 'Main', path: '/', component: BookTutoring},
+            {name: 'Login', path: '/login', component: Login},
+            {name: 'Book Tutoring', path: '/bookTutoring', component: BookTutoring},
+            {name: 'My Books', path: '/myBooks', component: MyBooks},
+            {name: 'Add Things', path: '/addThings', component: AddThings},
+            {name: 'Delete Things', path: '/deleteThings', component: DeleteThings}
+
+        ]
+    })
+
+
+    new Vue({
+        router,
+        el: '#app',
+        data: () => ({
+            isLogged: null,
+            username: 'Utente non registrato',
+            isAdmin: null
+        }),
+        components: {},
+        methods: {
+            clearSession() {
+                var self = this
+                $.get('/session?logout', function (data) {
+                    self.$router.push("/login");
+                    self.username = 'Utente non registrato';
+                    self.isLogged = false;
+                    self.isAdmin = false;
+                });
+            }
+        },
+        mounted() {
+            var isLogged = null;
+            var self = this;
+            var pageName = this.$router.currentRoute.name
+            document.title = pageName;
+            $.get('/session', function (data) {
+                isLogged = true;
+                self.username = data["username"];
+                self.isAdmin = data["admin"];
+
+            }).fail(function (xhr, error_text, statusText) {
+                isLogged = false;
+
+            }).always(function () {
+                self.isLogged = isLogged;
+
+
+                switch (pageName) {
+                    case "Main":
+                        //possono accederci tutti
+                        break;
+                    case "Login":
+                        if (self.isLogged)
+                            self.$router.push('/');
+                        break;
+                    case "Book Tutoring":
+                        //possono accederci tutti
+                        break;
+                    case "My Books":
+                        if (!self.isLogged)
+                            self.$router.push('/');
+                        break;
+                    case "Add Things":
+                        if (!self.isAdmin)
+                            self.$router.push('/');
+                        break;
+                    case "Delete Things":
+                        if (!self.isAdmin)
+                            self.$router.push('/');
+                        break;
+                    default:
+                        self.$router.push('/');
+                }
+            });
+        },
+        updated() {
+            var isLogged = null;
+            var self = this;
+            var pageName = this.$router.currentRoute.name
+            document.title = pageName;
+            $.get('/session', function (data) {
+                isLogged = true;
+                self.username = data["username"];
+                self.isAdmin = data["admin"];
+
+                if (self.isAdmin) {
+                    if (pageName === "Book")
+                        self.$router.push('/myBooks');
+                }
+            }).fail(function (xhr, error_text, statusText) {
+                isLogged = false;
+
+            }).always(function () {
+                self.isLogged = isLogged;
+
+                switch (pageName) {
+                    case "Main":
+                        //possono accederci tutti
+                        break;
+                    case "Login":
+                        if (self.isLogged)
+                            self.$router.push('/');
+                        break;
+                    case "Book Tutoring":
+                        //possono accederci tutti
+                        break;
+                    case "My Books":
+                        if (!self.isLogged)
+                            self.$router.push('/');
+                        break;
+                    case "Add Things":
+                        if (!self.isAdmin)
+                            self.$router.push('/');
+                        break;
+                    case "Delete Things":
+                        if (!self.isAdmin)
+                            self.$router.push('/');
+                        break;
+                    default://se la pagina non esiste
+                        self.$router.push('/');
+                }
+            });
+        }
+    })
+
+
+</script>
+<div id="app">
+    <div class="myNavbar">
+        <b-navbar toggleable="lg" type="dark" variant="info">
+            <b-collapse id="nav-collapse" is-nav>
+                <b-navbar-nav>
+                    <b-nav-item>
+                        <router-link to="/bookTutoring" class="navbar-link">Ripetizioni disponibili</router-link>
+                    </b-nav-item>
+
+                    <b-nav-item v-if="isLogged">
+                        <router-link to="/myBooks" class="navbar-link">Ripetizioni prenotate</router-link>
+                    </b-nav-item>
+
+                    <b-nav-item v-if="isLogged && isAdmin">
+                        <router-link to="/addThings" class="navbar-link">Aggiungi docenti/insegnamenti</router-link>
+                    </b-nav-item>
+
+                    <b-nav-item v-if="isLogged && isAdmin" class="navbar-link">
+                        <router-link to="/deleteThings" class="navbar-link">Rimuovi docenti/insegnamenti</router-link>
+                    </b-nav-item>
+                </b-navbar-nav>
+
+                <!-- Right aligned nav items -->
+                <b-navbar-nav class="ml-auto">
+
+                    <b-nav-item-dropdown right v-if="isLogged">
+                        <template #button-content>
+                            <em>{{username}}</em>
+                        </template>
+                        <b-dropdown-item @click="clearSession()"> Logout</b-dropdown-item>
+                    </b-nav-item-dropdown>
+
+                    <b-nav-item right v-if="!isLogged">
+                        <router-link class="navbar-login" to="/login">Login
+                        </router-link>
+                    </b-nav-item>
+                </b-navbar-nav>
+            </b-collapse>
+        </b-navbar>
+    </div>
+    <router-view></router-view>
+</div>
+</body>
+</html>
+
+
+
