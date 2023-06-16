@@ -10,13 +10,13 @@ services:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: tutoring
     volumes:
-      - /Users/rondinella2000/Desktop/DEFINITIVO/TutoringWEB/tutoring.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./tutoring.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3306:3306"
 
   app:
     image: tomcat:9-jdk11-openjdk-slim
     volumes:
-      - /Users/rondinella2000/Desktop/DEFINITIVO/TutoringWEB/target:/usr/local/tomcat/webapps
+      - ./target:/usr/local/tomcat/webapps
     ports:
       - "8080:8080"
